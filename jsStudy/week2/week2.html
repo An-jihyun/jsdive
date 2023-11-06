@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component Example</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      class Component {
+        constructor() {
+          this.state = {};
+          this.handlers = {};
+        }
+
+        setState(newState) {
+          this.state = { ...this.state, ...newState };
+          this.render();
+        }
+
+        on(eventName, handler) {
+          if (!this.handlers[eventName]) {
+            this.handlers[eventName] = [];
+          }
+          this.handlers[eventName].push(handler);
+        }
+
+        trigger(eventName, data) {
+          const eventHandlers = this.handlers[eventName];
+          if (eventHandlers) {
+            eventHandlers.forEach((handler) => handler(data));
+          }
+        }
+
+        render() {}
+      }
+
+      class App extends Component {
+        constructor($target) {
+          super();
+          this.$target = $target;
+          this.state = { items: ["item1", "item2"] };
+          this.setup();
+          this.render();
+        }
+
+        setup() {
+          this.on("addItem", () => {
+            const { items } = this.state;
+            this.setState({ items: [...items, `item${items.length + 1}`] });
+          });
+        }
+
+        render() {
+          const { items } = this.state;
+          this.$target.innerHTML = `
+          <ul>
+            ${items.map((item) => `<li>${item}</li>`).join("")}
+          </ul>
+          <button id="addButton">추가</button>
+        `;
+
+          const addButton = this.$target.querySelector("#addButton");
+          addButton.addEventListener("click", () => {
+            this.trigger("addItem");
+          });
+        }
+      }
+
+      const appContainer = document.querySelector("#app");
+      const app = new App(appContainer);
+    </script>
+  </body>
+</html>
