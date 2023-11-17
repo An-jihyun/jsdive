@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vanilla JS Web Component</title>
+  </head>
+  <body>
+    <!-- 웹 컴포넌트를 담을 컨테이너 -->
+    <div id="counter-container"></div>
+
+    <script>
+      // 웹 컴포넌트 정의
+      class CounterComponent extends HTMLElement {
+        constructor() {
+          super();
+
+          // 컴포넌트의 Shadow DOM 생성
+          this.attachShadow({ mode: "open" });
+
+          // 초기 카운터 값 설정
+          this._count = 0;
+        }
+
+        // 속성 변경 감지
+        static get observedAttributes() {
+          return ["count"];
+        }
+
+        // 속성 변경 시 호출되는 메서드
+        attributeChangedCallback(name, oldValue, newValue) {
+          if (name === "count") {
+            this._count = parseInt(newValue, 10) || 0;
+            this.render();
+          }
+        }
+
+        // 컴포넌트가 DOM에 추가될 때 호출되는 메서드
+        connectedCallback() {
+          this.render();
+        }
+
+        // 렌더링 메서드
+        render() {
+          this.shadowRoot.innerHTML = `
+      <style>
+        /* 스타일 작성 */
+        :host {
+          display: block;
+          font-family: sans-serif;
+          text-align: center;
+        }
+
+        button {
+          font-size: 1em;
+          margin: 8px;
+        }
+      </style>
+      <div>
+        <button id="decrement">-</button>
+        <span>${this._count}</span>
+        <button id="increment">+</button>
+      </div>
+    `;
+
+          // 버튼 이벤트 핸들러 등록
+          this.shadowRoot.getElementById("decrement").addEventListener("click", () => {
+            this._count--;
+            this.render();
+          });
+
+          this.shadowRoot.getElementById("increment").addEventListener("click", () => {
+            this._count++;
+            this.render();
+          });
+        }
+      }
+
+      // 커스텀 엘리먼트 등록
+      customElements.define("counter-component", CounterComponent);
+
+      // 웹 컴포넌트를 담을 컨테이너 요소 가져오기
+      const container = document.getElementById("counter-container");
+
+      // 컨테이너에 웹 컴포넌트 추가
+      container.innerHTML = '<counter-component count="5"></counter-component>';
+    </script>
+  </body>
+</html>
